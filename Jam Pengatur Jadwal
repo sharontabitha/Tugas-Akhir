@@ -1,0 +1,194 @@
+import customtkinter as ctk
+from tkinter import messagebox
+from datetime import datetime
+import pytz
+
+# Kelas User dengan getter dan setter
+class User:
+    def __init__(self):
+        self._name = ""  # Tipe Data string Modul 1
+        self._relation = ""
+
+    def set_name(self, name):
+        self._name = name
+
+    def get_name(self):
+        return self._name
+
+    def set_relation(self, relation):
+        self._relation = relation
+
+    def get_relation(self):
+        return self._relation
+
+
+# Kelas untuk ActivityManager
+class ActivityManager:
+    def __init__(self):  # Modul 4 cons
+        self.queue = []  # Queue untuk menyimpan aktivitas terjadwal
+
+    def add_activity(self, activity):
+        self.queue.append(activity)
+
+    def get_activities(self):
+        return self.queue  # Mengembalikan aktivitas dalam urutan jadwal
+
+
+# ini UDT untuk mendefinisikan object Modul 6
+user = User()
+activity_manager = ActivityManager()
+
+# Menambahkan aktivitas default ke queue
+activity_manager.add_activity("07:00-12.00 - Morning Class")
+activity_manager.add_activity("12:00-??.?? - Lunch Break")
+activity_manager.add_activity("15:00-17.00 - Work Out")
+
+# Fungsi untuk melanjutkan setelah validasi
+def proceed():
+    name = name_entry.get()
+    relation = relation_var.get()
+
+    user.set_name(name)
+    user.set_relation(relation)
+
+    if not name:
+        messagebox.showwarning("Warning", "Please enter your name.")
+        return
+
+    if relation == "Others":
+        messagebox.showwarning("Access Warning", "Skibidi!, please be nice.")
+        main_page()
+    elif relation in ["Friend", "Family", "Co-Worker"]:
+        main_page()
+    else:
+        messagebox.showwarning("Warning", "Please select a relation.")
+
+
+# Fungsi untuk menampilkan halaman utama
+def main_page():
+    root.withdraw()
+    main_window = ctk.CTkToplevel()
+    main_window.title("Activities Today")
+    main_window.geometry("500x600")
+
+    # Warna latar belakang
+    main_window.configure(bg="#E3F2FD")  # Light Blue
+
+    # Label selamat datang
+    welcome_label = ctk.CTkLabel(
+        main_window,
+        text=f"{user.get_name()} ({user.get_relation()}) +1000 aura!",
+        font=("Kristen ITC", 22, "bold"),
+        text_color="#0D47A1",
+    )
+    welcome_label.pack(pady=10)
+
+    # Label waktu
+    time_label = ctk.CTkLabel(
+        main_window, text="", font=("Arial", 16), text_color="#1E88E5"
+    )
+    time_label.pack(pady=10)
+
+    # Frame untuk aktivitas
+    activity_frame = ctk.CTkFrame(main_window, fg_color="#BBDEFB")
+    activity_frame.pack(pady=30, padx=20, fill="both", expand=True)
+
+    activity_label = ctk.CTkLabel(
+        activity_frame,
+        text="Do you want to make plans with Sharon?",
+        font=("Arial", 18),
+        text_color="#0D47A1",
+    )
+    activity_label.pack(pady=10)
+
+    # Kotak daftar aktivitas
+    activity_list = ctk.CTkTextbox(activity_frame, width=400, height=200)
+    activity_list.pack(pady=10)
+
+    for activity in activity_manager.get_activities():
+        activity_list.insert("end", f"{activity}\n")
+    activity_list.configure(state="disabled")
+
+    # Input aktivitas baru
+    activity_entry = ctk.CTkEntry(
+        main_window, placeholder_text="Enter new activity", width=300
+    )
+    activity_entry.pack(pady=10)
+
+    def add_activity():
+        new_activity = activity_entry.get()
+        if new_activity:
+            activity_manager.add_activity(new_activity)
+            activity_list.configure(state="normal")
+            activity_list.insert("end", f"{new_activity}\n")
+            activity_list.configure(state="disabled")
+            activity_entry.delete(0, "end")
+
+    add_button = ctk.CTkButton(
+        main_window, text="Add Activity", command=add_activity, fg_color="#1E88E5"
+    )
+    add_button.pack(pady=5)
+
+    exit_button = ctk.CTkButton(
+        main_window, text="Exit", command=main_window.destroy, fg_color="#D32F2F"
+    )
+    exit_button.pack(pady=10)
+
+    # Fungsi untuk memperbarui waktu
+    def update_time():
+        now = datetime.now(pytz.timezone("Asia/Jakarta")).strftime("%H:%M:%S")
+        time_label.configure(text=f"Current Time (WIB): {now}")
+        main_window.after(1000, update_time)
+
+    update_time()
+
+
+# Membuat window utama
+root = ctk.CTk()
+root.title("Relation Selector")
+root.geometry("400x500")
+root.configure(bg="#c2dbed")  # Light Blue Background
+
+# Label nama
+name_label = ctk.CTkLabel(
+    root, text="Who are you?:", font=("Arial", 18, "bold"), text_color="#08385c"
+)
+name_label.pack(pady=20)
+
+# Entry nama
+name_entry = ctk.CTkEntry(root, placeholder_text="Enter your name", width=150)
+name_entry.pack(pady=10)
+
+# Label instruksi
+instruction_label = ctk.CTkLabel(
+    root,
+    text="Select relation:",
+    font=("Arial", 18, "bold"),
+    text_color="#08385c",
+)
+instruction_label.pack(pady=20)
+
+relation_var = ctk.StringVar(value=None)
+
+# Frame opsi relationship
+relation_frame = ctk.CTkFrame(root, fg_color="#edf0f2")
+relation_frame.pack(pady=10, padx=10)
+
+relations = ["Friend", "Family", "Co-Worker", "Others"]  # Array
+for relation in relations:
+    ctk.CTkRadioButton(
+        relation_frame,
+        text=relation,
+        variable=relation_var,
+        value=relation,
+        fg_color="#1E88E5",
+        hover_color="#64B5F6",
+    ).pack(anchor="w", pady=6)
+
+# Tombol submit
+submit_button = ctk.CTkButton(
+    root, text="Submit", command=proceed, fg_color="#0f98E7"
+)
+submit_button.pack(pady=20)
+
+root.mainloop()
